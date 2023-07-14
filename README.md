@@ -1,7 +1,8 @@
 - 👋 Hi, I’m @andrew-wzj
 - 👀 I’m interested in smart home design, AI Education, table tennis, basketball, badminton, Civilization VI, League of Legends (ARAM & TFT)
-- 🌱 I’m currently learning CS & Math
-- 💞️ I’m looking to collaborate on 
+- 🌱 I’m currently learning CS & Math, CD(computational design)
+- 
+- 💞️ I’m looking to collaborate on Smart Home design 
 - 📫 How to reach me ... zw0726ang@gmail.com
 
 <!---
