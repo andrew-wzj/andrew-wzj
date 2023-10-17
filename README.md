@@ -1,8 +1,7 @@
 - 👋 Hi, I’m @andrew-wzj
 - 👀 I’m interested in smart home design, AI Education, table tennis, basketball, badminton, Civilization VI
 - 🌱 I’m currently learning CS & Math, CD(computational design)
-- 
-- 💞️ I’m looking to collaborate on Smart Home design 
+- 💞️ I’m looking to collaborate on Smart Home design, Kaggle
 - 📫 How to reach me ... zw0726ang@gmail.com
 
 <!---
