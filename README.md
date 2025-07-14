@@ -1,4 +1,4 @@
-### Hi， Welcome to my GitHub!
+### Hi，Welcome to my GitHub!
 
 - <img align="right" alt="GIF" src="https://media.giphy.com/media/iIqmM5tTjmpOB9mpbn/giphy.gif" style="zoom:50%;" />😄 I am new graduate from Gordon College (2024)
 
