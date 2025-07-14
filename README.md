@@ -1,6 +1,6 @@
 ### Hi，Welcome to my GitHub!
 
-- <img align="right" alt="GIF" src="https://media.giphy.com/media/iIqmM5tTjmpOB9mpbn/giphy.gif" style="zoom:50%;" />😄 I am new graduate from Gordon College (2024)
+- <img align="right" alt="GIF" src="https://media.giphy.com/media/iIqmM5tTjmpOB9mpbn/giphy.gif" style="zoom:50%;" />😄 I am fluent at human language (en)
 
 - 🛠 I’m currently working with Java, Python, React, SQL
 
