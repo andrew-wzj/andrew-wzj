@@ -287,7 +287,9 @@ for (let t = 0; t < TICKS; t++) {
   else if (t < 36) aj = P('aj', run(t), lerp(26, 84, (t - 18) / 18));
   else if (t < IMPACT) aj = P('aj', 'idle', 84);
   else if (t < IMPACT + 8) aj = P('aj', run(t), lerp(84, 112, (t - IMPACT) / 8));
-  else aj = P('aj', 'cheer', 112, t < 84 && ((t >> 1) & 1) ? 3 : 0);
+  else if (t < 76) aj = P('aj', 'cheer', 112, ((t >> 1) & 1) ? 3 : 0);
+  else if (t < 82) aj = P('aj', run(t), lerp(112, 126, (t - 76) / 6));
+  else aj = P('aj', 'cheer', 126, t < 90 && ((t >> 1) & 1) ? 3 : 0);
   // AI #23: catch, jab, drive, gather, leap over both defenders, slam, hang, drop, flex
   let ai;
   if (t < 17) ai = P('ai', 'idle', 84);
@@ -303,26 +305,27 @@ for (let t = 0; t < TICKS; t++) {
   else if (t === IMPACT) ai = P('ai', 'slam', 158, 16);
   else if (t < 69) ai = P('ai', Math.floor((t - IMPACT) / 3) % 2 ? 'hang2' : 'hang', 165, t === IMPACT + 1 ? 9 : t === IMPACT + 2 ? 4 : 2);
   else if (t < 72) ai = P('ai', 'land', 163, [1, 0, 0][t - 69]);
-  else if (t < 88) ai = P('ai', 'flex', 163);
-  else ai = P('ai', 'idle', 163);
-  // defender #4 (guards AJ, faces left), recovers to the rim, contests, gets posterized
+  else if (t < 82) ai = P('ai', 'flex', 163);
+  else ai = P('ai', 'cheer', 163, t < 90 && ((t >> 1) & 1) ? 0 : 3);
+  // defender #4 (guards AJ), sprints back as help to wall up the rim, contests, gets posterized
   let d1;
   if (t < 16) d1 = P('d1', 'stance', 45 + ((t >> 2) & 1), 0, true);
-  else if (t < 44) d1 = P('d1', run(t), lerp(45, 142, (t - 16) / 28));
-  else if (t < 46) d1 = P('d1', 'stance', 142, 0, true);
-  else if (t < 53) d1 = P('d1', 'jump', 142, [2, 4, 5, 5, 4, 3, 1][t - 46], true);
-  else if (t < IMPACT) d1 = P('d1', 'stance', 142, 0, true);
-  else if (t < IMPACT + 4) d1 = P('d1', 'fall', 142 + (t - IMPACT + 1) * 1.5, 0, true);
-  else d1 = P('d1', 'sit', 148, 0, true);
-  // defender #8 (guards #23), backpedals into the lane
+  else if (t < 36) d1 = P('d1', run(t), lerp(45, 152, (t - 16) / 20));
+  else if (t < 46) d1 = P('d1', 'stance', 152 + ((t >> 2) & 1), 0, true);
+  else if (t < 53) d1 = P('d1', 'jump', 152, [2, 4, 5, 5, 4, 3, 1][t - 46], true);
+  else if (t < IMPACT) d1 = P('d1', 'stance', 152, 0, true);
+  else if (t < IMPACT + 4) d1 = P('d1', 'fall', 152 + (t - IMPACT + 1) * 1.2, 0, true);
+  else d1 = P('d1', 'sit', 157, 0, true);
+  // defender #8 (guards #23): bites on the jab, gets blown by, chases and contests from behind
   let d2;
   if (t < 24) d2 = P('d2', 'stance', 102 - ((t >> 2) & 1), 0, true);
-  else if (t < 44) d2 = P('d2', run(t), lerp(102, 154, (t - 24) / 20), 0, true);
-  else if (t < 46) d2 = P('d2', 'stance', 154, 0, true);
-  else if (t < 53) d2 = P('d2', 'jump', 154, [3, 5, 6, 6, 5, 3, 1][t - 46], true);
-  else if (t < IMPACT) d2 = P('d2', 'stance', 154, 0, true);
-  else if (t < IMPACT + 4) d2 = P('d2', 'fall', 154 + (t - IMPACT + 1) * 1.2, 0, true);
-  else d2 = P('d2', 'sit', 159, 0, true);
+  else if (t < 34) d2 = P('d2', 'stance', lerp(102, 95, clamp01((t - 24) / 3)), t >= 26 && t < 30 ? 1 : 0, true);
+  else if (t < 44) d2 = P('d2', run(t), lerp(95, 140, (t - 34) / 10));
+  else if (t < 46) d2 = P('d2', 'stance', 140, 0, true);
+  else if (t < 53) d2 = P('d2', 'jump', 140, [3, 5, 6, 6, 5, 3, 1][t - 46], true);
+  else if (t < IMPACT) d2 = P('d2', 'stance', 140, 0, true);
+  else if (t < IMPACT + 4) d2 = P('d2', 'fall', 140 + (t - IMPACT + 1) * 1.2, 0, true);
+  else d2 = P('d2', 'sit', 145, 0, true);
   for (const [k, e] of [['aj', aj], ['ai', ai], ['d1', d1], ['d2', d2]]) {
     tl[k].push(e);
     const w = e.lift < 2 ? (e.f.includes('sit') ? 14 : 10) : e.lift < 8 ? 8 : e.lift < 16 ? 6 : 4;
@@ -355,7 +358,7 @@ for (let t = 0; t < TICKS; t++) {
   tl.clock.push({ f: t < 20 ? 'c3' : t < 38 ? 'c2' : t < IMPACT ? 'c1' : (t < IMPACT + 12 && t % 4 >= 2) ? 'c0dim' : 'c0', x: 18, y: 15 });
   tl.cheer.push(t >= IMPACT && t < 90 && ((t >> 2) & 1) === 0 ? { f: 'cheer', x: 0, y: (t >> 1) & 1 ? 0 : -1 } : null);
   SHAKE.push([[-3, 1], [3, -1], [-2, 1], [2, 0], [-1, 0]][t - IMPACT] || [0, 0]);
-  FLASH.push(t === IMPACT ? 0.7 : t === IMPACT + 1 ? 0.3 : 0);
+  FLASH.push(t === IMPACT ? 0.45 : t === IMPACT + 1 ? 0.15 : 0);
 }
 
 // ---------- sprites ----------
