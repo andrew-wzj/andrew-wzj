@@ -8,13 +8,14 @@ In both jobs I try to do the same thing: break a hard problem into steps that so
 
 #### What I've built
 
+- **[going-going-gone-live](https://github.com/andrew-wzj/going-going-gone-live)** (C# / ASP.NET Core + SignalR): a real-time classroom auction for an art board game I use in class. The teacher runs it on the projector; students bid from their phones, and each phone shows what the lot is worth to that student before they bid. [Play it →](https://going-going-gone-live.onrender.com)
 - **[grpc-jobworker](https://github.com/andrew-wzj/grpc-jobworker)** (Go): runs shell commands as background jobs, with gRPC and REST APIs, a CLI and a web UI. It streams output live, limits how many jobs run at once, stops whole process trees, and secures the API with mutual TLS and tokens.
 - **[housing-lottery-sim](https://github.com/andrew-wzj/housing-lottery-sim)** (Python): fair assignment rules and a strategy-proof algorithm for a college housing lottery, tested on 1,000 simulated lotteries. It revisits my senior capstone. [Read the case study →](https://andrew-wzj.github.io/reactportfolio/housing-lottery/)
 - **[reactportfolio](https://github.com/andrew-wzj/reactportfolio)** (React + Vite): my portfolio and live resume. [View the site →](https://andrew-wzj.github.io/reactportfolio/)
 
 #### Tools
 
-Go · Python · React · C# · gRPC · SQL
+Go · Python · C# / ASP.NET Core · SignalR · React · gRPC · Docker · SQL
 
 #### Contact
 
@@ -32,13 +33,14 @@ Go · Python · React · C# · gRPC · SQL
 
 #### 做过的项目
 
+- **[going-going-gone-live](https://github.com/andrew-wzj/going-going-gone-live)**（C# / ASP.NET Core + SignalR）：给我课堂上用的艺术品拍卖桌游做的实时拍卖网页。老师在投影上主持，学生用手机出价；每次出价前，手机会算出这件拍品对自己值多少。[直接玩 →](https://going-going-gone-live.onrender.com)
 - **[grpc-jobworker](https://github.com/andrew-wzj/grpc-jobworker)**（Go）：把 shell 命令作为后台任务运行，提供 gRPC 和 REST API、命令行工具和网页界面。支持实时输出、限制同时运行的任务数、终止整个进程树，并用双向 TLS 和令牌保护 API。
 - **[housing-lottery-sim](https://github.com/andrew-wzj/housing-lottery-sim)**（Python）：为大学宿舍抽签设计公平的分配规则和防策略操纵（strategy-proof）的算法，并在 1,000 次模拟抽签上做了测试。这个项目是对我本科毕业设计的重新思考。[阅读案例研究 →](https://andrew-wzj.github.io/reactportfolio/housing-lottery/)
 - **[reactportfolio](https://github.com/andrew-wzj/reactportfolio)**（React + Vite）：我的个人作品集和在线简历。[访问网站 →](https://andrew-wzj.github.io/reactportfolio/)
 
 #### 技术栈
 
-Go · Python · React · C# · gRPC · SQL
+Go · Python · C# / ASP.NET Core · SignalR · React · gRPC · Docker · SQL
 
 #### 联系方式
 
