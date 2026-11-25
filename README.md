@@ -2,7 +2,7 @@
   <img src="assets/hoops.svg" width="800" alt="Pixel-art loop, 2 on 2: AJ passes to AI teammate #23, who drives through both defenders and dunks over them at the buzzer, 30 to 29">
 </p>
 <p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=22&pause=1200&color=FF6B6B&center=true&vCenter=true&width=820&lines=Coding%20in%20the%20AI%20era%20%3D%20playing%20next%20to%20Jordan;I%20call%20the%20play.%20AI%20drops%2030.;Pass.%20Drive.%20Dunk." alt="Coding in the AI era = playing next to Jordan">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=22&pause=1200&color=FF6B6B&center=true&vCenter=true&width=820&lines=I%20call%20the%20play.%20AI%20drops%2030.;Pass.%20Drive.%20Dunk." alt="I call the play. AI drops 30. Pass. Drive. Dunk.">
 </p>
 <p align="center">
   <img src="https://img.shields.io/badge/Position-Point_Guard-3dd6d0?style=for-the-badge" alt="Position: Point Guard">
@@ -14,7 +14,7 @@
 
 I teach math (Calculus, Algebra II, SAT) at Dublin Christian Academy in New Hampshire and write software on the side. B.S. in Computer Science and Mathematics, Gordon College, 2024.
 
-🏀 Coding in the AI era feels like playing next to Jordan: I call the play and make the pass, he drops 30.
+🏀 I call the play and make the pass. My AI teammate finishes.
 
 #### What I've built
 
