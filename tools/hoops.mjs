@@ -1,16 +1,21 @@
 // Generates assets/hoops.svg: an original pixel-art loop.
-// AJ dribbles and passes, the AI teammate (#23) rises and shoots, swish, the scoreboard goes 28 → 30.
+// 2-on-2: AJ (#1) bounce-passes to the AI teammate (#23), who drives through both defenders and dunks over them
+// at the buzzer. Screen shake, flash, DUNK!, defenders knocked down, scoreboard 28 → 30 to beat 29.
 // Native canvas 200×60, drawn at 4× with crisp rects. Frame animation uses SMIL (works in GitHub READMEs).
 // Run: node tools/hoops.mjs
 import { writeFileSync } from 'node:fs';
 
-const W = 200, H = 60, SCALE = 4, FPS = 12, TICKS = 64;
+const W = 200, H = 60, SCALE = 4, FPS = 12, TICKS = 96;
 const T = TICKS / FPS;
 
 // ---------- palettes: each ramp goes outline, shadow, base, light, highlight ----------
 const R = {
   skin:  ['#3a2219', '#9a5a3e', '#c98763', '#e8ae84', '#f8d4b0'],
   teal:  ['#0c3134', '#16747a', '#22a8a8', '#4fd9cf', '#a9f2ea'],
+  opp:   ['#1a0e2e', '#43296a', '#6646a0', '#8c6ccc', '#c2aaf2'],
+  oppD:  ['#1a0e2e', '#2e1c4c', '#43296a', '#6646a0', '#8c6ccc'],
+  skinD: ['#1e100a', '#4e2c1c', '#74462c', '#965e3a', '#ba8256'],
+  skinT: ['#3a2014', '#8a5634', '#b67c50', '#d6a070', '#f0c494'],
   tealD: ['#0c3134', '#0f4f55', '#16747a', '#22a8a8', '#4fd9cf'],
   red:   ['#3d0f16', '#8f2532', '#cc3d48', '#f46c6a', '#ffb3a6'],
   redD:  ['#3d0f16', '#661a26', '#8f2532', '#cc3d48', '#f46c6a'],
@@ -66,6 +71,9 @@ const FONT = {
   W: ['#.#', '#.#', '#.#', '###', '#.#'], '!': ['#', '#', '#', '.', '#'], '+': ['...', '.#.', '###', '.#.', '...'],
   '·': ['.', '.', '#', '.', '.'], ':': ['.', '#', '.', '#', '.'], ' ': ['.', '.', '.', '.', '.'], Q: ['.#.', '#.#', '#.#', '##.', '.##'], R: ['##.', '#.#', '##.', '#.#', '#.#'],
   0: ['###', '#.#', '#.#', '#.#', '###'], 1: ['.#.', '##.', '.#.', '.#.', '###'], 2: ['###', '..#', '###', '#..', '###'],
+  D: ['##.', '#.#', '#.#', '#.#', '##.'], E: ['###', '#..', '##.', '#..', '###'], K: ['#.#', '#.#', '##.', '#.#', '#.#'],
+  N: ['##.', '#.#', '#.#', '#.#', '#.#'], U: ['#.#', '#.#', '#.#', '#.#', '###'], V: ['#.#', '#.#', '#.#', '#.#', '.#.'],
+  9: ['###', '#.#', '###', '..#', '###'], 5: ['###', '#..', '###', '..#', '###'],
   3: ['###', '..#', '.##', '..#', '###'], 4: ['#.#', '#.#', '###', '..#', '..#'], 8: ['###', '#.#', '###', '#.#', '###'],
 };
 function text(L, x, y, str, c, s = 1, shadow = null) {
@@ -105,7 +113,7 @@ function background() {
   // LED ad board
   rect(L, 0, 26, W, 7, '#0b0c14'); rect(L, 0, 26, W, 1, '#2a2f4a'); rect(L, 0, 33, W, 7, '#1b2038'); rect(L, 0, 33, W, 1, '#262d50');
   let x = 8;
-  while (x < W) { x = text(L, x, 27, 'PASS · SHOOT · SWISH', '#3fe3e0') + 4; x = text(L, x, 27, 'AJ + AI', C.yellow) + 8; }
+  while (x < W) { x = text(L, x, 27, 'PASS · DRIVE · DUNK', '#3fe3e0') + 4; x = text(L, x, 27, 'AJ + AI', C.yellow) + 8; }
   // hardwood floor: planks get taller toward the viewer (perspective), staggered seams
   const wood = ['#7a4423', '#9a5a2e', '#b8743c', '#cf8c4c', '#e0a462'];
   let y = 40, band = 0;
@@ -123,8 +131,6 @@ function background() {
   // painted key under the hoop + lines
   for (let yy = 41; yy < H; yy++) { const x0 = 150 - (yy - 41) * 0.8 | 0; for (let xx = x0; xx < W; xx++) put(L, xx, yy, mix(get(L, xx, yy), '#8f2532', 0.3)); put(L, x0, yy, '#f3e6cf'); }
   rect(L, 0, 41, W, 1, '#f3e6cf');
-  // shadows under players
-  for (const [cx, w] of [[34, 14], [110, 14]]) { rect(L, cx - w / 2, 55, w, 2, '#5a3018'); rect(L, cx - w / 2 + 2, 54, w - 4, 1, '#6d3a1d'); }
   // hoop: pole, arm, backboard, back of rim
   rect(L, 186, 9, 4, 48, R.metal[1]); rect(L, 186, 9, 1, 48, R.metal[3]); rect(L, 189, 9, 1, 48, R.metal[0]);
   rect(L, 183, 55, 10, 4, R.metal[0]); rect(L, 184, 55, 8, 1, R.metal[2]);
@@ -133,9 +139,10 @@ function background() {
   rect(L, 178, 4, 2, 24, '#d6dcea'); rect(L, 177, 13, 1, 9, '#e8584b');
   rect(L, 164, 20, 12, 1, '#9a3a12');                         // back half of the rim
   // scoreboard frame (digits are animated)
-  rect(L, 4, 3, 52, 21, C.ink); rect(L, 5, 4, 50, 19, '#07070c'); rect(L, 5, 4, 50, 1, '#2a2f4a');
+  rect(L, 4, 3, 76, 21, C.ink); rect(L, 5, 4, 74, 19, '#07070c'); rect(L, 5, 4, 74, 1, '#2a2f4a'); rect(L, 58, 6, 1, 15, '#2a2f4a');
   text(L, 8, 7, 'AJ+AI', C.yellow);
   text(L, 8, 15, '4Q', '#8c95ab');
+  text(L, 62, 7, 'OPP', '#8c95ab'); text(L, 64, 15, '29', '#c8cdd8');
   return L;
 }
 function mix(a, b, k) {
@@ -146,90 +153,85 @@ function mix(a, b, k) {
 }
 
 // ---------- characters ----------
-const HEAD_AJ = [
-  '..kkkkk..',
-  '.khHHHhk.',
-  'khhHHhhhk',
-  'khhhhhLLk',
-  'khhsSSeLk',
-  'kkksSSSLk',
-  '.kssSSSSk',
-  '.ksSSSmk.',
-  '..ksSSk..',
-  '...kkk...',
-];
-const HEAD_AI = [
-  '....ky....',
-  '....k.....',
-  '.kkkkkkkk.',
-  'k4443332k.',
-  'kvvvvVVvk.',
-  'kvVgvvVvk.',
-  'k3333221k.',
-  '.k22211k..',
-  '..kkkkk...',
-];
-const mapAJ = { k: R.skin[0], h: C.hair, H: C.hairL, s: R.skin[1], S: R.skin[2], L: R.skin[3], e: C.eye, m: C.mouth };
-const mapAI = { k: R.metal[0], y: C.yellow, 1: R.metal[1], 2: R.metal[2], 3: R.metal[3], 4: R.metal[4], v: C.visor, V: C.visorL, g: C.glint };
+const HEADS = {
+  aj: ['..kkkkk..', '.khHHHhk.', 'khhHHhhhk', 'khhhhhLLk', 'khhsSSeLk', 'kkksSSSLk', '.kssSSSSk', '.ksSSSmk.', '..ksSSk..', '...kkk...'],
+  ai: ['....ky....', '....k.....', '.kkkkkkkk.', 'k4443332k.', 'kvvvvVVvk.', 'kvVgvvVvk.', 'k3333221k.', '.k22211k..', '..kkkkk...'],
+  d1: ['..kkkkk..', '.khhhhhk.', 'khhHhhhhk', 'khssSSSLk', 'kssSSSeLk', 'kssSSSSLk', '.kssSSSSk', '.ksSSSmk.', '..ksSSk..', '...kkk...'],
+  d2: ['..kkkkk..', '.khHhHhk.', 'kbbbbbbbk', 'khhssSLLk', 'khsSSSeLk', 'kksSSSSLk', '.kssSSSSk', '.ksSSSmk.', '..ksSSk..', '...kkk...'],
+};
+const HEAD_MAPS = {
+  aj: { k: R.skin[0], h: C.hair, H: C.hairL, s: R.skin[1], S: R.skin[2], L: R.skin[3], e: C.eye, m: C.mouth },
+  ai: { k: R.metal[0], y: C.yellow, 1: R.metal[1], 2: R.metal[2], 3: R.metal[3], 4: R.metal[4], v: C.visor, V: C.visorL, g: C.glint },
+  d1: { k: R.skinD[0], h: '#120c0a', H: '#2e2420', s: R.skinD[1], S: R.skinD[2], L: R.skinD[3], e: '#0a0606', m: '#4a1a20' },
+  d2: { k: R.skinT[0], h: '#4a2a12', H: '#7a4e24', b: '#f2f2f6', s: R.skinT[1], S: R.skinT[2], L: R.skinT[3], e: C.eye, m: C.mouth },
+};
+const darker = (r) => r.map((c, i) => (i ? r[Math.max(1, i - 1)] : c));
+const KINDS = {
+  aj: { limb: R.skin, shirt: R.teal, shorts: R.tealD, num: '1', sock: true },
+  ai: { limb: R.metal, limbD: R.metalD, shirt: R.teal, shorts: R.tealD, num: '23' },
+  d1: { limb: R.skinD, shirt: R.opp, shorts: R.oppD, num: '4', sock: true },
+  d2: { limb: R.skinT, shirt: R.opp, shorts: R.oppD, num: '8', sock: true },
+};
+function flipLayer(L) { const o = layer(L.w, L.h); for (let y = 0; y < L.h; y++) for (let x = 0; x < L.w; x++) o.px[y * L.w + (L.w - 1 - x)] = L.px[y * L.w + x]; return o; }
 
-// pose: points relative to the feet (x right, y up = negative)
-function figure(kind, pose) {
-  const L = layer(36, 46), ox = 16, oy = 44;
+// pose: points relative to the feet (x toward the way the player faces, y up = negative)
+function figure(kind, pose, flip) {
+  const K = KINDS[kind], L = layer(36, 46), ox = 16, oy = 44;
   const P = (p) => [ox + p[0], oy + p[1]];
-  const ai = kind === 'ai';
-  const limb = ai ? R.metal : R.skin, limbD = ai ? R.metalD : R.skin.map((c, i) => (i ? R.skin[Math.max(1, i - 1)] : c));
-  const shirt = ai ? R.red : R.teal, shorts = ai ? R.redD : R.tealD;
+  const limb = K.limb, limbD = K.limbD || darker(limb);
   const { n, p, eF, hF, eB, hB, kF, fF, kB, fB } = pose;
   const sh = (dx) => [n[0] + dx, n[1] + 1.5];
-  // back arm + back leg (one step darker)
   capsule(L, P(sh(-1.5)), P(eB), 1.3, limbD); capsule(L, P(eB), P(hB), 1.2, limbD); disc(L, P(hB), 1.6, limbD);
   capsule(L, P([p[0] - 1.5, p[1]]), P(kB), 1.6, limbD); capsule(L, P(kB), P(fB), 1.4, limbD);
   shoe(L, P(fB), true);
-  // torso + shorts
-  capsule(L, P([n[0], n[1] + 3]), P([p[0], p[1] - 2]), 4.6, shirt);
-  capsule(L, P([p[0] - 0.5, p[1] - 1.5]), P([p[0] + 0.5, p[1] + 1.5]), 4.4, shorts);
-  // jersey number, catching the light
-  const num = ai ? '23' : '1', tx = Math.round(P(n)[0] - textWidth(num) / 2 + (ai ? -1 : 0.5)), ty = Math.round(P(n)[1] + 4);
-  text(L, tx, ty, num, '#ffffff');
-  // front leg
+  capsule(L, P([n[0], n[1] + 3]), P([p[0], p[1] - 2]), 4.6, K.shirt);
+  capsule(L, P([p[0] - 0.5, p[1] - 1.5]), P([p[0] + 0.5, p[1] + 1.5]), 4.4, K.shorts);
+  // jersey number; mirrored glyphs when the whole sprite will be flipped, so it reads right afterwards
+  const tw = textWidth(K.num), T2 = layer(tw, 5); text(T2, 0, 0, K.num, '#ffffff');
+  const NL = flip ? flipLayer(T2) : T2, tx = Math.round(P(n)[0] - tw / 2 + (K.num.length > 1 ? -1 : 0.5)) - (flip ? 1 : 0), ty = Math.round(P(n)[1] + 4);
+  NL.px.forEach((c, i) => c && put(L, tx + (i % tw), ty + ((i / tw) | 0), c));
   capsule(L, P([p[0] + 1.5, p[1]]), P(kF), 1.6, limb); capsule(L, P(kF), P(fF), 1.4, limb);
-  if (!ai) { const [fx, fy] = P(fF); rect(L, Math.round(fx) - 1, Math.round(fy) - 4, 3, 2, '#f2f2f6'); }
+  if (K.sock) { const [fx, fy] = P(fF); rect(L, Math.round(fx) - 1, Math.round(fy) - 4, 3, 2, '#f2f2f6'); }
   shoe(L, P(fF), false);
-  // head
   const [hx, hy] = P(n);
-  if (ai) grid(L, Math.round(hx) - 4, Math.round(hy) - 9, HEAD_AI, mapAI); else grid(L, Math.round(hx) - 4, Math.round(hy) - 10, HEAD_AJ, mapAJ);
-  // front arm
+  grid(L, Math.round(hx) - 4, Math.round(hy) - (kind === 'ai' ? 9 : 10), HEADS[kind], HEAD_MAPS[kind]);
   capsule(L, P(sh(1.5)), P(eF), 1.3, limb); capsule(L, P(eF), P(hF), 1.2, limb); disc(L, P(hF), 1.7, limb);
-  return { L, ox, oy };
+  return flip ? { L: flipLayer(L), ox: 35 - ox, oy } : { L, ox, oy };
 }
 function shoe(L, [x, y], back) {
   x = Math.round(x); y = Math.round(y);
-  const r = back ? R.shoe.map((c, i) => (i ? R.shoe[Math.max(1, i - 1)] : c)) : R.shoe;
+  const r = back ? darker(R.shoe) : R.shoe;
   rect(L, x - 2, y - 1, 5, 2, r[2]); rect(L, x - 2, y - 1, 5, 1, r[3]); rect(L, x - 3, y, 7, 1, r[0]); rect(L, x - 3, y - 2, 6, 1, r[0]);
   put(L, x + 2, y - 1, back ? '#8f2532' : '#e8584b');
 }
 const v = (x, y) => [x, y];
 const POSES = {
-  aj: {
-    low:  { n: v(1, -22), p: v(0, -12), eF: v(5, -16), hF: v(8, -12), eB: v(-3, -16), hB: v(-2, -12), kF: v(4, -6), fF: v(4, 0), kB: v(-2, -6), fB: v(-4, 0) },
-    high: { n: v(1, -23), p: v(0, -12), eF: v(5, -17), hF: v(8, -15), eB: v(-3, -17), hB: v(-2, -13), kF: v(4, -6), fF: v(4, 0), kB: v(-2, -6), fB: v(-4, 0) },
-    pass: { n: v(2, -22), p: v(0, -12), eF: v(6, -19), hF: v(11, -18), eB: v(5, -18), hB: v(10, -16), kF: v(5, -6), fF: v(7, 0), kB: v(-2, -5), fB: v(-5, 0) },
-    cheer:{ n: v(0, -23), p: v(0, -12), eF: v(3, -27), hF: v(5, -32), eB: v(-3, -27), hB: v(-4, -32), kF: v(2, -6), fF: v(2, 0), kB: v(-2, -6), fB: v(-3, 0) },
-  },
-  ai: {
-    idle:  { n: v(0, -22), p: v(0, -12), eF: v(2, -16), hF: v(3, -11), eB: v(-2, -16), hB: v(-2, -11), kF: v(1, -6), fF: v(2, 0), kB: v(-1, -6), fB: v(-2, 0) },
-    catch: { n: v(0, -22), p: v(0, -12), eF: v(4, -18), hF: v(6, -17), eB: v(2, -18), hB: v(5, -16), kF: v(2, -6), fF: v(3, 0), kB: v(-1, -6), fB: v(-3, 0) },
-    crouch:{ n: v(1, -19), p: v(-1, -9), eF: v(4, -15), hF: v(5, -18), eB: v(2, -15), hB: v(4, -17), kF: v(3, -5), fF: v(2, 0), kB: v(1, -5), fB: v(-2, 0) },
-    rise:  { n: v(0, -22), p: v(0, -12), eF: v(3, -27), hF: v(4, -31), eB: v(1, -26), hB: v(3, -30), kF: v(1, -6), fF: v(1, 0), kB: v(-1, -6), fB: v(-1, 0) },
-    flick: { n: v(0, -22), p: v(0, -12), eF: v(4, -27), hF: v(7, -31), eB: v(1, -24), hB: v(3, -27), kF: v(1, -6), fF: v(1, 0), kB: v(-1, -6), fB: v(-1, 0) },
-    land:  { n: v(1, -20), p: v(-1, -10), eF: v(4, -26), hF: v(6, -30), eB: v(2, -16), hB: v(3, -12), kF: v(3, -5), fF: v(2, 0), kB: v(1, -5), fB: v(-2, 0) },
-  },
+  low:    { n: v(1, -22), p: v(0, -12), eF: v(5, -16), hF: v(8, -12), eB: v(-3, -16), hB: v(-2, -12), kF: v(4, -6), fF: v(4, 0), kB: v(-2, -6), fB: v(-4, 0) },
+  high:   { n: v(1, -23), p: v(0, -12), eF: v(5, -17), hF: v(8, -15), eB: v(-3, -17), hB: v(-2, -13), kF: v(4, -6), fF: v(4, 0), kB: v(-2, -6), fB: v(-4, 0) },
+  pass:   { n: v(2, -22), p: v(0, -12), eF: v(6, -19), hF: v(11, -18), eB: v(5, -18), hB: v(10, -16), kF: v(5, -6), fF: v(7, 0), kB: v(-2, -5), fB: v(-5, 0) },
+  cheer:  { n: v(0, -23), p: v(0, -12), eF: v(3, -27), hF: v(5, -32), eB: v(-3, -27), hB: v(-4, -32), kF: v(2, -6), fF: v(2, 0), kB: v(-2, -6), fB: v(-3, 0) },
+  idle:   { n: v(0, -22), p: v(0, -12), eF: v(2, -16), hF: v(3, -11), eB: v(-2, -16), hB: v(-2, -11), kF: v(1, -6), fF: v(2, 0), kB: v(-1, -6), fB: v(-2, 0) },
+  catch:  { n: v(0, -22), p: v(0, -12), eF: v(4, -18), hF: v(6, -17), eB: v(2, -18), hB: v(5, -16), kF: v(2, -6), fF: v(3, 0), kB: v(-1, -6), fB: v(-3, 0) },
+  crouch: { n: v(1, -19), p: v(-1, -9), eF: v(4, -15), hF: v(5, -18), eB: v(2, -15), hB: v(4, -17), kF: v(3, -5), fF: v(2, 0), kB: v(1, -5), fB: v(-2, 0) },
+  land:   { n: v(1, -19), p: v(-1, -9), eF: v(5, -17), hF: v(8, -15), eB: v(-3, -16), hB: v(-6, -14), kF: v(4, -5), fF: v(4, 0), kB: v(-1, -5), fB: v(-4, 0) },
+  run1:   { n: v(3, -21), p: v(1, -12), eF: v(6, -15), hF: v(9, -12), eB: v(-2, -17), hB: v(-5, -14), kF: v(6, -7), fF: v(8, -2), kB: v(-3, -5), fB: v(-7, -2) },
+  run2:   { n: v(3, -22), p: v(1, -12), eF: v(5, -16), hF: v(8, -13), eB: v(0, -16), hB: v(-2, -12), kF: v(3, -6), fF: v(2, 0), kB: v(-3, -8), fB: v(-8, -7) },
+  gather: { n: v(2, -18), p: v(0, -9), eF: v(5, -14), hF: v(7, -17), eB: v(3, -13), hB: v(6, -15), kF: v(4, -5), fF: v(3, 0), kB: v(0, -4), fB: v(-3, 0) },
+  leap:   { n: v(1, -22), p: v(0, -12), eF: v(-1, -28), hF: v(-4, -31), eB: v(5, -20), hB: v(8, -22), kF: v(5, -14), fF: v(5, -8), kB: v(-2, -8), fB: v(-5, -2) },
+  slam:   { n: v(3, -22), p: v(0, -12), eF: v(7, -24), hF: v(10, -19), eB: v(-3, -19), hB: v(-6, -17), kF: v(4, -8), fF: v(4, -2), kB: v(-2, -6), fB: v(-4, -1) },
+  hang:   { n: v(0, -22), p: v(0, -12), eF: v(2, -28), hF: v(3, -33), eB: v(1, -28), hB: v(1, -33), kF: v(1, -6), fF: v(1, 0), kB: v(-1, -6), fB: v(-2, 0) },
+  hang2:  { n: v(0, -22), p: v(0, -12), eF: v(2, -28), hF: v(3, -33), eB: v(1, -28), hB: v(1, -33), kF: v(3, -6), fF: v(5, -2), kB: v(1, -6), fB: v(2, -1) },
+  flex:   { n: v(0, -22), p: v(0, -12), eF: v(5, -21), hF: v(5, -27), eB: v(-5, -21), hB: v(-5, -27), kF: v(2, -6), fF: v(3, 0), kB: v(-2, -6), fB: v(-3, 0) },
+  stance: { n: v(0, -20), p: v(0, -10), eF: v(4, -15), hF: v(8, -17), eB: v(-4, -15), hB: v(-8, -12), kF: v(4, -5), fF: v(5, 0), kB: v(-4, -5), fB: v(-5, 0) },
+  jump:   { n: v(0, -22), p: v(0, -12), eF: v(2, -27), hF: v(3, -32), eB: v(0, -27), hB: v(-1, -32), kF: v(1, -6), fF: v(1, -1), kB: v(-1, -6), fB: v(-2, -1) },
+  fall:   { n: v(-5, -19), p: v(-2, -10), eF: v(1, -22), hF: v(4, -25), eB: v(-8, -23), hB: v(-10, -27), kF: v(2, -5), fF: v(4, 0), kB: v(-2, -5), fB: v(0, 0) },
+  sit:    { n: v(-2, -14), p: v(-2, -5), eF: v(-5, -9), hF: v(-7, -3), eB: v(1, -10), hB: v(4, -9), kF: v(3, -8), fF: v(7, -1), kB: v(1, -7), fB: v(5, 0) },
 };
 
-// ---------- ball, net, rim front, sparkles ----------
+// ---------- ball, net, rim front, effects ----------
 function ballFrame(angle) {
-  const L = layer(9, 9), c = [4.5, 4.5];
-  disc(L, c, 3.4, R.ball);
+  const L = layer(9, 9);
+  disc(L, [4.5, 4.5], 3.4, R.ball);
   const ca = Math.cos(angle), sa = Math.sin(angle);
   for (let y = 0; y < 9; y++) for (let x = 0; x < 9; x++) {
     const dx = x + 0.5 - 4.5, dy = y + 0.5 - 4.5; if (dx * dx + dy * dy > 3.0 * 3.0) continue;
@@ -243,119 +245,195 @@ const NETS = {
   up:   ['k.w.w.w.w.k', '.ww.www.ww.', '..wwwwwww..', '...w.w.w...', '...wwwww...', '...........'],
   down: ['k.w.w.w.w.k', '.w.w.w.w.w.', '..w.w.w.w..', '..w.w.w.w..', '..w.w.w.w..', '...w.w.w...', '...wwwww...'],
 };
-function netFrame(rows) {
-  const L = layer(14, 10);
-  grid(L, 1, 1, rows, { k: '#9a3a12', w: '#eef2fa' });
-  rect(L, 0, 0, 14, 1, '#e8783a'); rect(L, 0, 1, 14, 1, '#9a3a12'); rect(L, 1, 0, 6, 1, '#ffb36b');  // front of the rim
+function netFrame(rows, bent) {
+  const L = layer(14, 11), d = bent ? 1 : 0;
+  grid(L, 1, 1 + d, rows, { k: '#9a3a12', w: '#eef2fa' });
+  rect(L, 0, d, 14, 1, '#e8783a'); rect(L, 0, 1 + d, 14, 1, '#9a3a12'); rect(L, 1, d, 6, 1, '#ffb36b');
+  if (bent) { put(L, 12, 0, '#e8783a'); put(L, 13, 0, '#e8783a'); }
   return L;
 }
 function sparkle() { const L = layer(5, 5); grid(L, 0, 0, ['..y..', '..Y..', 'yYWYy', '..Y..', '..y..'], { y: C.yellowD, Y: C.yellow, W: '#fffbe0' }); return L; }
 function shadowFrame(w) { const L = layer(w, 2); rect(L, 1, 0, w - 2, 1, '#6d3a1d'); rect(L, 0, 1, w, 1, '#5a3018'); return L; }
 function digits(str) { const L = layer(24, 11); text(L, 0, 0, str, C.led, 2, C.ledD); return L; }
-function swish() { const L = layer(60, 14); text(L, 1, 1, 'SWISH!', '#1a1206', 2); text(L, 0, 0, 'SWISH!', C.yellow, 2); return L; }
+function dunkText() { const L = layer(60, 19); text(L, 2, 2, 'DUNK!', '#3d0f16', 3); text(L, 1, 1, 'DUNK!', '#8f2532', 3); text(L, 0, 0, 'DUNK!', C.yellow, 3); return L; }
+function burst(r0, r1) {
+  const L = layer(44, 34), cx = 22, cy = 17;
+  for (let a = 0; a < 12; a++) { const t = (a / 12) * Math.PI * 2 + 0.13;
+    for (let r = r0; r <= r1; r += 0.5) put(L, Math.round(cx + Math.cos(t) * r * 1.25), Math.round(cy + Math.sin(t) * r), r > r1 - 2 ? '#ffffff' : C.yellow); }
+  return L;
+}
+function speedLines() { const L = layer(16, 16); [[3, 9, 0], [8, 13, 2], [13, 7, 4]].forEach(([y, w, x]) => { rect(L, x, y, w, 1, '#f3e6cf'); rect(L, x, y, 3, 1, '#cf8c4c'); }); return L; }
 function crowdCheer() {
-  // raised arms in the front crowd row
   const L = layer();
-  for (let x = 2 + 6 + 56; x < W; x += 14) { rect(L, x - 1, 15, 1, 4, '#7a5240'); rect(L, x + 6, 15, 1, 4, '#7a5240'); put(L, x - 1, 14, '#94664c'); put(L, x + 6, 14, '#94664c'); }
+  for (let x = 2 + 6; x < W; x += 7) if (x > 82 && (x >> 1) % 3 !== 0) { rect(L, x - 1, 15, 1, 4, '#7a5240'); rect(L, x + 6, 15, 1, 4, '#7a5240'); put(L, x - 1, 14, '#94664c'); put(L, x + 6, 14, '#94664c'); }
   return L;
 }
 
 // ---------- timeline ----------
 const lerp = (a, b, k) => a + (b - a) * k;
-const AJ_X = 34, AI_X = 110, FLOOR_Y = 55;
-const tl = { aj: [], ai: [], ball: [], net: [], score: [], swish: [], spark: [], shadow: [], cheer: [], clock: [] };
+const clamp01 = (k) => Math.max(0, Math.min(1, k));
+const F = 55, RIM = [170, 20];
+const tl = { cheer: [], score: [], clock: [], sh_aj: [], sh_ai: [], sh_d1: [], sh_d2: [], bsh: [], speed: [], aj: [], d1: [], d2: [], ai: [], ball: [], net: [], burst: [], spark: [], dunk: [] };
+const SHAKE = [], FLASH = [];
+const IMPACT = 56;
+const hand = (e, which = 'hF') => { const [kind, pose, f] = e.f.split('_'), h = POSES[pose][which]; return [e.x + (f ? -h[0] : h[0]), e.y + h[1]]; };
+const run = (t) => (((t >> 1) & 1) ? 'run2' : 'run1');
 for (let t = 0; t < TICKS; t++) {
-  // AJ
-  let aj = t < 18 ? ((t % 6) >= 4 || t % 6 === 0 ? 'high' : 'low') : t < 24 ? 'pass' : t >= 52 ? 'cheer' : 'low';
-  tl.aj.push({ f: 'aj_' + aj, x: AJ_X, y: FLOOR_Y });
-  // AI
-  let ai = 'idle', lift = 0;
-  if (t >= 26 && t < 31) ai = 'catch';
-  else if (t >= 31 && t < 35) ai = 'crouch';
-  else if (t >= 35 && t < 39) { ai = 'rise'; lift = [3, 6, 8, 9][t - 35]; }
-  else if (t >= 39 && t < 43) { ai = 'flick'; lift = [9, 8, 6, 3][t - 39]; }
-  else if (t >= 43 && t < 47) ai = 'land';
-  else if (t >= 47) ai = t >= 52 ? 'land' : 'idle';
-  tl.ai.push({ f: 'ai_' + ai, x: AI_X, y: FLOOR_Y - lift });
-  // ball centre
-  let b = null;
-  if (t < 18) { const ph = t % 6; b = [AJ_X + 9, FLOOR_Y + [-11, -8, -4, -4, -8, -12][ph]]; }
-  else if (t < 20) b = [AJ_X + 12, FLOOR_Y - 18];
-  else if (t < 24) { const k = (t - 19) / 4; b = [lerp(AJ_X + 12, 74, k), lerp(FLOOR_Y - 18, FLOOR_Y - 4, k * k)]; }
-  else if (t < 27) { const k = (t - 23) / 3; b = [lerp(74, AI_X + 6, k), lerp(FLOOR_Y - 4, FLOOR_Y - 17, 1 - (1 - k) ** 2)]; }
-  else if (t < 31) b = [AI_X + 6, FLOOR_Y - 17];
-  else if (t < 35) b = [AI_X + 5, FLOOR_Y - 18];
-  else if (t < 39) b = [AI_X + 4, FLOOR_Y - tl.ai[t].y * 0 - (FLOOR_Y - tl.ai[t].y) - 33];
-  else if (t < 52) { const k = (t - 39) / 12; b = [lerp(AI_X + 7, 170, k), lerp(FLOOR_Y - 9 - 33, 19, k) - 9 * 4 * k * (1 - k)]; }
-  else if (t < 55) b = [170, [23, 28, 33][t - 52]];
-  else if (t < 58) { const k = (t - 54) / 3; b = [lerp(170, 166, k), lerp(33, FLOOR_Y - 4, k * k)]; }
-  else if (t < 62) { const k = (t - 57) / 4; b = [lerp(166, 156, k), FLOOR_Y - 4 - 7 * Math.sin(Math.PI * k)]; }
-  tl.ball.push(b ? { f: 'ball' + (t % 4), x: Math.round(b[0] - 4.5), y: Math.round(b[1] - 4.5) } : null);
-  tl.shadow.push(b && t < 62 ? (() => { const hgt = FLOOR_Y - b[1]; const w = hgt < 6 ? 8 : hgt < 18 ? 6 : 4; return { f: 'sh' + w, x: Math.round(b[0] - w / 2), y: FLOOR_Y - 1 }; })() : null);
-  tl.net.push({ f: t === 52 || t === 53 ? 'net_down' : t === 54 ? 'net_up' : 'net_rest', x: 163, y: 19 });
-  tl.score.push({ f: t >= 52 ? 's30' : 's28', x: 33, y: 7 });
-  // game clock counts down 0:03 → 0:00; it hits zero as the ball leaves AI's hand (buzzer beater)
-  tl.clock.push({ f: t < 15 ? 'c3' : t < 27 ? 'c2' : t < 39 ? 'c1' : (t < 52 && t % 4 >= 2) ? 'c0dim' : 'c0', x: 18, y: 15 });
-  tl.swish.push(t >= 52 && t < 62 && !(t === 57 || t === 58) ? { f: 'swish', x: 120, y: 4 } : null);
-  tl.spark.push(t >= 52 && t < 56 ? { f: 'spark', x: [158, 176, 160, 174][t - 52], y: [14, 15, 26, 25][t - 52] } : null);
-  tl.cheer.push(t >= 52 && t < 63 ? { f: 'cheer', x: 0, y: 0 } : null);
+  const P = (kind, pose, x, lift = 0, flip = false) => ({ f: `${kind}_${pose}${flip ? '_f' : ''}`, x: Math.round(x), y: F - Math.round(lift), lift });
+  // AJ: dribble, bounce pass, trail the play, celebrate
+  let aj;
+  if (t < 14) aj = P('aj', (t % 6) >= 4 || t % 6 === 0 ? 'high' : 'low', 26);
+  else if (t < 18) aj = P('aj', 'pass', 26);
+  else if (t < 36) aj = P('aj', run(t), lerp(26, 84, (t - 18) / 18));
+  else if (t < IMPACT) aj = P('aj', 'idle', 84);
+  else if (t < IMPACT + 8) aj = P('aj', run(t), lerp(84, 112, (t - IMPACT) / 8));
+  else aj = P('aj', 'cheer', 112, t < 84 && ((t >> 1) & 1) ? 3 : 0);
+  // AI #23: catch, jab, drive, gather, leap over both defenders, slam, hang, drop, flex
+  let ai;
+  if (t < 17) ai = P('ai', 'idle', 84);
+  else if (t < 22) ai = P('ai', 'catch', 84);
+  else if (t < 24) ai = P('ai', 'crouch', 84);
+  else if (t < 38) ai = P('ai', run(t), lerp(84, 130, (t - 24) / 14));
+  else if (t < 41) ai = P('ai', 'gather', lerp(130, 134, (t - 38) / 3));
+  else if (t < IMPACT) {
+    const k = (t - 41) / (IMPACT - 41), x = lerp(134, 158, k);
+    const lift = t <= 48 ? 21 * Math.sin(((t - 41) / 7) * Math.PI / 2) : lerp(21, 16, (t - 48) / (IMPACT - 48));
+    ai = P('ai', t < 52 ? 'leap' : 'slam', x, lift);
+  }
+  else if (t === IMPACT) ai = P('ai', 'slam', 158, 16);
+  else if (t < 69) ai = P('ai', Math.floor((t - IMPACT) / 3) % 2 ? 'hang2' : 'hang', 165, t === IMPACT + 1 ? 9 : t === IMPACT + 2 ? 4 : 2);
+  else if (t < 72) ai = P('ai', 'land', 163, [1, 0, 0][t - 69]);
+  else if (t < 88) ai = P('ai', 'flex', 163);
+  else ai = P('ai', 'idle', 163);
+  // defender #4 (guards AJ, faces left), recovers to the rim, contests, gets posterized
+  let d1;
+  if (t < 16) d1 = P('d1', 'stance', 45 + ((t >> 2) & 1), 0, true);
+  else if (t < 44) d1 = P('d1', run(t), lerp(45, 142, (t - 16) / 28));
+  else if (t < 46) d1 = P('d1', 'stance', 142, 0, true);
+  else if (t < 53) d1 = P('d1', 'jump', 142, [2, 4, 5, 5, 4, 3, 1][t - 46], true);
+  else if (t < IMPACT) d1 = P('d1', 'stance', 142, 0, true);
+  else if (t < IMPACT + 4) d1 = P('d1', 'fall', 142 + (t - IMPACT + 1) * 1.5, 0, true);
+  else d1 = P('d1', 'sit', 148, 0, true);
+  // defender #8 (guards #23), backpedals into the lane
+  let d2;
+  if (t < 24) d2 = P('d2', 'stance', 102 - ((t >> 2) & 1), 0, true);
+  else if (t < 44) d2 = P('d2', run(t), lerp(102, 154, (t - 24) / 20), 0, true);
+  else if (t < 46) d2 = P('d2', 'stance', 154, 0, true);
+  else if (t < 53) d2 = P('d2', 'jump', 154, [3, 5, 6, 6, 5, 3, 1][t - 46], true);
+  else if (t < IMPACT) d2 = P('d2', 'stance', 154, 0, true);
+  else if (t < IMPACT + 4) d2 = P('d2', 'fall', 154 + (t - IMPACT + 1) * 1.2, 0, true);
+  else d2 = P('d2', 'sit', 159, 0, true);
+  for (const [k, e] of [['aj', aj], ['ai', ai], ['d1', d1], ['d2', d2]]) {
+    tl[k].push(e);
+    const w = e.lift < 2 ? (e.f.includes('sit') ? 14 : 10) : e.lift < 8 ? 8 : e.lift < 16 ? 6 : 4;
+    tl['sh_' + k].push({ f: 'sh' + w, x: e.x - (w >> 1) + (e.f.includes('sit') ? (e.f.endsWith('_f') ? -2 : 2) : 0), y: F - 1 });
+  }
+  // ball
+  let b;
+  if (t < 14) b = [aj.x + 9, F + [-11, -8, -4, -4, -8, -12][t % 6]];
+  else if (t < 16) b = [aj.x + 12, F - 18];
+  else if (t < 19) { const k = (t - 15) / 3; b = [lerp(38, 60, k), lerp(F - 18, F - 4, k * k)]; }
+  else if (t < 22) { const k = (t - 18) / 3; const h = hand(tl.ai[t]); b = [lerp(60, h[0] + 1, k), lerp(F - 4, h[1], 1 - (1 - k) ** 2)]; }
+  else if (t < 24) { const h = hand(ai); b = [h[0] + 1, h[1] - 1]; }
+  else if (t < 38) b = [ai.x + 10, F + [-12, -7, -3, -7][t % 4]];
+  else if (t <= IMPACT) { const h = hand(ai); b = [h[0] + (ai.f.includes('leap') ? 0 : 1), h[1] - 2]; }
+  else if (t < IMPACT + 6) b = [RIM[0] - (t - IMPACT) * 0.6, RIM[1] + 4 + (t - IMPACT) * 5.5];
+  else if (t < IMPACT + 12) { const k = (t - IMPACT - 6) / 6; b = [lerp(166, 150, k), F - 4 - 8 * Math.sin(Math.PI * k)]; }
+  else if (t < IMPACT + 18) { const k = (t - IMPACT - 12) / 6; b = [lerp(150, 140, k), F - 4 - 3 * Math.sin(Math.PI * k)]; }
+  else b = [lerp(140, 132, clamp01((t - IMPACT - 18) / 10)), F - 4];
+  b = [Math.min(b[0], 199), Math.min(b[1], F - 4)];
+  tl.ball.push({ f: 'ball' + ((t >> (t > IMPACT + 18 ? 1 : 0)) % 4), x: Math.round(b[0] - 4.5), y: Math.round(b[1] - 4.5) });
+  const bh = F - b[1], bw = bh < 6 ? 8 : bh < 18 ? 6 : 4;
+  tl.bsh.push({ f: 'sh' + bw, x: Math.round(b[0] - bw / 2), y: F - 1 });
+  // rim/net, effects, scoreboard
+  tl.net.push({ f: t >= IMPACT && t < 69 ? (t < IMPACT + 2 ? 'net_down_b' : 'net_rest_b') : t === 69 ? 'net_up' : 'net_rest', x: 163, y: 19 });
+  tl.speed.push((t >= 27 && t < 38) || (t >= 42 && t < 51) ? { f: 'speed', x: ai.x - 22, y: ai.y - 20 } : null);
+  tl.burst.push(t === IMPACT ? { f: 'burst1', x: RIM[0] - 22, y: RIM[1] - 17 } : t > IMPACT && t < IMPACT + 3 ? { f: 'burst2', x: RIM[0] - 22, y: RIM[1] - 17 } : null);
+  tl.spark.push(t >= IMPACT + 1 && t < IMPACT + 6 ? { f: 'spark', x: [158, 178, 156, 180, 166][t - IMPACT - 1], y: [12, 10, 24, 22, 6][t - IMPACT - 1] } : null);
+  tl.dunk.push(t >= IMPACT && t < IMPACT + 22 ? { f: 'dunk', x: 92 + (t === IMPACT ? -2 : 0), y: t === IMPACT ? 1 : t === IMPACT + 1 ? 2 : 3 } : null);
+  tl.score.push({ f: t >= IMPACT ? 's30' : 's28', x: 33, y: 7 });
+  tl.clock.push({ f: t < 20 ? 'c3' : t < 38 ? 'c2' : t < IMPACT ? 'c1' : (t < IMPACT + 12 && t % 4 >= 2) ? 'c0dim' : 'c0', x: 18, y: 15 });
+  tl.cheer.push(t >= IMPACT && t < 90 && ((t >> 2) & 1) === 0 ? { f: 'cheer', x: 0, y: (t >> 1) & 1 ? 0 : -1 } : null);
+  SHAKE.push([[-3, 1], [3, -1], [-2, 1], [2, 0], [-1, 0]][t - IMPACT] || [0, 0]);
+  FLASH.push(t === IMPACT ? 0.7 : t === IMPACT + 1 ? 0.3 : 0);
 }
 
 // ---------- sprites ----------
 const sprites = {};
-for (const [name, pose] of Object.entries(POSES.aj)) { const { L, ox, oy } = figure('aj', pose); sprites['aj_' + name] = { L, ox, oy }; }
-for (const [name, pose] of Object.entries(POSES.ai)) { const { L, ox, oy } = figure('ai', pose); sprites['ai_' + name] = { L, ox, oy }; }
+for (const kind of Object.keys(KINDS)) for (const [name, pose] of Object.entries(POSES)) for (const f of [false, true]) {
+  const key = `${kind}_${name}${f ? '_f' : ''}`;
+  Object.defineProperty(sprites, key, { enumerable: true, configurable: true, get() { const s = figure(kind, pose, f); Object.defineProperty(sprites, key, { value: s }); return s; } });
+}
 for (let i = 0; i < 4; i++) sprites['ball' + i] = { L: ballFrame(i * Math.PI / 4), ox: 0, oy: 0 };
-for (const [k, rows] of Object.entries(NETS)) sprites['net_' + k] = { L: netFrame(rows), ox: 0, oy: 0 };
-for (const w of [4, 6, 8]) sprites['sh' + w] = { L: shadowFrame(w), ox: 0, oy: 0 };
+for (const [k, rows] of Object.entries(NETS)) { sprites['net_' + k] = { L: netFrame(rows, false), ox: 0, oy: 0 }; sprites['net_' + k + '_b'] = { L: netFrame(rows, true), ox: 0, oy: 0 }; }
+for (const w of [4, 6, 8, 10, 14]) sprites['sh' + w] = { L: shadowFrame(w), ox: 0, oy: 0 };
 for (const [k, str, c] of [['c3', '0:03', '#8c95ab'], ['c2', '0:02', '#8c95ab'], ['c1', '0:01', C.yellow], ['c0', '0:00', C.led], ['c0dim', '0:00', C.ledD]]) { const L = layer(16, 5); text(L, 0, 0, str, c); sprites[k] = { L, ox: 0, oy: 0 }; }
 sprites.s28 = { L: digits('28'), ox: 0, oy: 0 }; sprites.s30 = { L: digits('30'), ox: 0, oy: 0 };
-sprites.swish = { L: swish(), ox: 0, oy: 0 }; sprites.spark = { L: sparkle(), ox: 0, oy: 0 }; sprites.cheer = { L: crowdCheer(), ox: 0, oy: 0 };
+sprites.dunk = { L: dunkText(), ox: 0, oy: 0 }; sprites.spark = { L: sparkle(), ox: 0, oy: 0 }; sprites.cheer = { L: crowdCheer(), ox: 0, oy: 0 };
+sprites.burst1 = { L: burst(5, 10), ox: 0, oy: 0 }; sprites.burst2 = { L: burst(10, 16), ox: 0, oy: 0 }; sprites.speed = { L: speedLines(), ox: 0, oy: 0 };
+
+const ORDER = ['cheer', 'score', 'clock', 'sh_aj', 'sh_d1', 'sh_d2', 'sh_ai', 'bsh', 'speed', 'aj', 'd1', 'd2', 'ai', 'ball', 'net', 'burst', 'spark', 'dunk'];
 
 // ---------- SVG output ----------
 function rle(L) {
-  let out = '';
-  for (let y = 0; y < L.h; y++) {
-    let x = 0;
-    while (x < L.w) {
-      const c = L.px[y * L.w + x];
-      if (!c) { x++; continue; }
-      let e = x + 1; while (e < L.w && L.px[y * L.w + e] === c) e++;
-      out += `<rect x="${x}" y="${y}" width="${e - x}" height="1" fill="${c}"/>`;
-      x = e;
-    }
-  }
-  return out;
+  const runs = [];
+  for (let y = 0; y < L.h; y++) { let x = 0; while (x < L.w) { const c = L.px[y * L.w + x]; if (!c) { x++; continue; } let e = x + 1; while (e < L.w && L.px[y * L.w + e] === c) e++; runs.push({ x, y, w: e - x, h: 1, c }); x = e; } }
+  const open = new Map(), out = [];
+  for (const r of runs) { const k = `${r.x},${r.w},${r.c}`, o = open.get(k); if (o && o.y + o.h === r.y) o.h++; else { const n = { ...r }; open.set(k, n); out.push(n); } }
+  const byFill = new Map(); for (const r of out) { if (!byFill.has(r.c)) byFill.set(r.c, []); byFill.get(r.c).push(r); }
+  let svg = '';
+  for (const [c, rs] of byFill) svg += `<path fill="${c}" d="${rs.map((r) => `M${r.x} ${r.y}h${r.w}v${r.h}h-${r.w}z`).join('')}"/>`;
+  return svg;
 }
 const kt = (i) => (i / TICKS).toFixed(4);
+const comp = (vals) => { const k = [], v = []; vals.forEach((x, i) => { if (i === 0 || x !== vals[i - 1]) { k.push(kt(i)); v.push(x); } }); return { k: k.join(';'), v: v.join(';') }; };
+const anim = (attr, vals, extra = '') => { const c = comp(vals); return c.v.includes(';') ? `<animate${extra ? 'Transform' : ''} attributeName="${attr}"${extra} dur="${T}s" repeatCount="indefinite" calcMode="discrete" keyTimes="${c.k}" values="${c.v}"/>` : ''; };
 // One <g> per sprite frame: visible on the ticks that use it, moved with discrete translates.
 function track(entries) {
   let out = '';
   const names = [...new Set(entries.filter(Boolean).map(e => e.f))];
   for (const name of names) {
-    const s = sprites[name];
-    const vis = [], pos = [];
+    const s = sprites[name], vis = [], pos = [];
     let last = null;
-    entries.forEach((e, i) => {
-      const on = e && e.f === name;
-      if (on) last = `${e.x - s.ox},${e.y - s.oy}`;
-      vis.push(on ? 'visible' : 'hidden');
-      pos.push(last);
-    });
+    entries.forEach((e) => { const on = e && e.f === name; if (on) last = `${e.x - s.ox},${e.y - s.oy}`; vis.push(on ? 'visible' : 'hidden'); pos.push(last); });
     const first = pos.find(Boolean); for (let i = 0; i < pos.length; i++) if (!pos[i]) pos[i] = first;
-    const comp = (vals) => { const k = [], v = []; vals.forEach((x, i) => { if (i === 0 || x !== vals[i - 1]) { k.push(kt(i)); v.push(x); } }); return { k: k.join(';'), v: v.join(';') }; };
-    const cv = comp(vis), cp = comp(pos);
-    const anim = `<animate attributeName="visibility" dur="${T}s" repeatCount="indefinite" calcMode="discrete" keyTimes="${cv.k}" values="${cv.v}"/>`
-      + (cp.v.includes(';') ? `<animateTransform attributeName="transform" type="translate" dur="${T}s" repeatCount="indefinite" calcMode="discrete" keyTimes="${cp.k}" values="${cp.v}"/>` : '');
-    out += `<g visibility="${vis[0]}" transform="translate(${pos[0]})">${anim}${rle(s.L)}</g>\n`;
+    out += `<g visibility="${vis[0]}" transform="translate(${pos[0]})">${anim('visibility', vis)}${anim('transform', pos, ' type="translate"')}${rle(s.L)}</g>\n`;
   }
   return out;
 }
-
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W * SCALE}" height="${H * SCALE}" shape-rendering="crispEdges" role="img" aria-label="Pixel-art loop: AJ dribbles and passes, the AI teammate number 23 shoots, swish, the score goes from 28 to 30">
-<title>AJ + AI: pass, shoot, swish</title>
-<g>${rle(background())}</g>
-${track(tl.cheer)}${track(tl.score)}${track(tl.clock)}${track(tl.shadow)}${track(tl.aj)}${track(tl.ai)}${track(tl.ball)}${track(tl.net)}${track(tl.spark)}${track(tl.swish)}
+const BG = background();
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W * SCALE}" height="${H * SCALE}" shape-rendering="crispEdges" role="img" aria-label="Pixel-art loop: 2 on 2. AJ passes to AI teammate number 23, who drives through both defenders and dunks over them at the buzzer, 30 to 29">
+<title>AJ + AI: pass, drive, dunk</title>
+<rect x="-4" y="-4" width="${W + 8}" height="${H + 8}" fill="#121424"/>
+<g transform="translate(0,0)">${anim('transform', SHAKE.map(([x, y]) => `${x},${y}`), ' type="translate"')}
+<g>${rle(BG)}</g>
+${ORDER.map((k) => track(tl[k])).join('')}</g>
+<rect width="${W}" height="${H}" fill="#fff8e0" opacity="0">${anim('opacity', FLASH.map(String))}</rect>
 </svg>`;
 writeFileSync(new URL('../assets/hoops.svg', import.meta.url), svg);
 console.log('wrote assets/hoops.svg', (svg.length / 1024).toFixed(1), 'KB');
+
+// ---------- preview: composite frames into a PNG contact sheet (node tools/hoops.mjs --preview out.png [step]) ----------
+const pi = process.argv.indexOf('--preview');
+if (pi > 0) {
+  const { deflateSync } = await import('node:zlib');
+  const step = +(process.argv[pi + 2] || 4), t0 = +(process.argv[pi + 3] || 0), t1 = +(process.argv[pi + 4] || TICKS), ticks = []; for (let t = t0; t < t1; t += step) ticks.push(t);
+  const cols = +(process.env.COLS || 2), s = +(process.env.S || 2), gap = 4, X0 = +(process.env.X0 || 0), CW = W - X0, FW = CW * s, FH = H * s, SW = cols * (FW + gap) + gap, SH = Math.ceil(ticks.length / cols) * (FH + gap) + gap;
+  const img = new Uint8Array(SW * SH * 3).fill(24);
+  const hex = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+  ticks.forEach((t, n) => {
+    const fr = BG.px.slice();
+    for (const k of ORDER) { const e = tl[k][t]; if (!e) continue; const sp = sprites[e.f], L = sp.L;
+      for (let y = 0; y < L.h; y++) for (let x = 0; x < L.w; x++) { const c = L.px[y * L.w + x]; const X = e.x - sp.ox + x, Y = e.y - sp.oy + y; if (c && X >= 0 && Y >= 0 && X < W && Y < H) fr[Y * W + X] = c; } }
+    const [dx, dy] = SHAKE[t], fa = FLASH[t], ox = gap + (n % cols) * (FW + gap), oy = gap + ((n / cols) | 0) * (FH + gap);
+    for (let y = 0; y < FH; y++) for (let x = 0; x < FW; x++) { const sx = ((x / s) | 0) + X0 - dx, sy = ((y / s) | 0) - dy; let c = sx >= 0 && sy >= 0 && sx < W && sy < H ? hex(fr[sy * W + sx]) : [18, 20, 36];
+      if (fa) c = c.map((v, i) => Math.round(v + ([255, 248, 224][i] - v) * fa)); img.set(c, ((oy + y) * SW + ox + x) * 3); }
+  });
+  const CRC = new Uint32Array(256).map((_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
+  const crc = (b) => { let c = 0xffffffff; for (const x of b) c = CRC[(c ^ x) & 255] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+  const chunk = (ty, d) => { const tb = Buffer.from(ty), l = Buffer.alloc(4), c = Buffer.alloc(4); l.writeUInt32BE(d.length); c.writeUInt32BE(crc(Buffer.concat([tb, d]))); return Buffer.concat([l, tb, d, c]); };
+  const raw = Buffer.alloc((SW * 3 + 1) * SH); for (let y = 0; y < SH; y++) Buffer.from(img.buffer, y * SW * 3, SW * 3).copy(raw, y * (SW * 3 + 1) + 1);
+  const ih = Buffer.alloc(13); ih.writeUInt32BE(SW, 0); ih.writeUInt32BE(SH, 4); ih[8] = 8; ih[9] = 2;
+  writeFileSync(process.argv[pi + 1], Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ih), chunk('IDAT', deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]));
+  console.log('preview', process.argv[pi + 1], ticks.length, 'frames');
+}
