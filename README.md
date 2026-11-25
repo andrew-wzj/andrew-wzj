@@ -1,3 +1,15 @@
+<p align="center">
+  <img src="assets/hoops.svg" width="720" alt="Pixel-art loop: AJ passes, the AI teammate shoots, swish, 30 points">
+</p>
+<p align="center">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=22&pause=1200&color=FF6B6B&center=true&vCenter=true&width=640&lines=Coding%20in%20the%20AI%20era%20%3D%20playing%20next%20to%20Jordan;I%20call%20the%20play.%20AI%20drops%2030.;Pass.%20Shoot.%20Swish.;AI%20%E6%97%B6%E4%BB%A3%E5%86%99%E4%BB%A3%E7%A0%81%EF%BC%8C%E5%83%8F%E5%92%8C%E4%B9%94%E4%B8%B9%E4%B8%80%E8%B5%B7%E6%89%93%E7%90%83" alt="Coding in the AI era = playing next to Jordan">
+</p>
+<p align="center">
+  <img src="https://img.shields.io/badge/Position-Point_Guard-3dd6d0?style=for-the-badge" alt="Position: Point Guard">
+  <img src="https://img.shields.io/badge/Teammate-AI_%2323-ff6b6b?style=for-the-badge" alt="Teammate: AI #23">
+  <img src="https://img.shields.io/badge/Tonight-30_PTS-ffd23f?style=for-the-badge" alt="Tonight: 30 PTS">
+</p>
+
 ### Hi, I'm Zhijie Wang 👋
 
 **English** · [中文](#中文)
@@ -5,6 +17,8 @@
 I teach math and write software. I studied Computer Science and Mathematics at Gordon College (B.S., double major, 2024). I now teach Calculus, Algebra II and SAT Math at Dublin Christian Academy in New Hampshire, where I also lead the STEM Club.
 
 In both jobs I try to do the same thing: break a hard problem into steps that someone can actually take.
+
+🏀 Coding in the AI era feels like playing next to Jordan: I bring the ball up, call the play and make the pass. He drops 30, and we both walk off with the win.
 
 #### What I've built
 
@@ -30,6 +44,8 @@ Go · Python · C# / ASP.NET Core · SignalR · React · gRPC · Docker · SQL
 你好，我是 Zhijie Wang。我教数学，也写软件。我毕业于 Gordon College，计算机科学与数学双专业（理学学士，2024）。现在在新罕布什尔州的 Dublin Christian Academy 教微积分、Algebra II 和 SAT 数学，同时负责学校的 STEM Club。
 
 不管是教书还是写代码，我做的都是同一件事：把难题拆成一步一步能走下去的小步骤。
+
+🏀 AI 时代敲代码，真的像跟乔丹一起打球：我运球过半场、喊个战术、传一下，他直接砍 30 分，赢球就完事了。
 
 #### 做过的项目
 
