@@ -2,7 +2,7 @@
   <img src="assets/hoops.svg" width="720" alt="Pixel-art loop: AJ passes, the AI teammate shoots, swish, 30 points">
 </p>
 <p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=22&pause=1200&color=FF6B6B&center=true&vCenter=true&width=640&lines=Coding%20in%20the%20AI%20era%20%3D%20playing%20next%20to%20Jordan;I%20call%20the%20play.%20AI%20drops%2030.;Pass.%20Shoot.%20Swish.;AI%20%E6%97%B6%E4%BB%A3%E5%86%99%E4%BB%A3%E7%A0%81%EF%BC%8C%E5%83%8F%E5%92%8C%E4%B9%94%E4%B8%B9%E4%B8%80%E8%B5%B7%E6%89%93%E7%90%83" alt="Coding in the AI era = playing next to Jordan">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=22&pause=1200&color=FF6B6B&center=true&vCenter=true&width=820&lines=Coding%20in%20the%20AI%20era%20%3D%20playing%20next%20to%20Jordan;I%20call%20the%20play.%20AI%20drops%2030.;Pass.%20Shoot.%20Swish.;AI%20%E6%97%B6%E4%BB%A3%E5%86%99%E4%BB%A3%E7%A0%81%EF%BC%8C%E5%83%8F%E5%92%8C%E4%B9%94%E4%B8%B9%E4%B8%80%E8%B5%B7%E6%89%93%E7%90%83" alt="Coding in the AI era = playing next to Jordan">
 </p>
 <p align="center">
   <img src="https://img.shields.io/badge/Position-Point_Guard-3dd6d0?style=for-the-badge" alt="Position: Point Guard">
