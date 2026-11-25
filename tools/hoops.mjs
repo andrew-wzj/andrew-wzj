@@ -135,7 +135,7 @@ function background() {
   // scoreboard frame (digits are animated)
   rect(L, 4, 3, 52, 21, C.ink); rect(L, 5, 4, 50, 19, '#07070c'); rect(L, 5, 4, 50, 1, '#2a2f4a');
   text(L, 8, 7, 'AJ+AI', C.yellow);
-  text(L, 8, 15, '4Q', '#8c95ab'); text(L, 18, 15, '0:01', '#8c95ab');
+  text(L, 8, 15, '4Q', '#8c95ab');
   return L;
 }
 function mix(a, b, k) {
@@ -263,7 +263,7 @@ function crowdCheer() {
 // ---------- timeline ----------
 const lerp = (a, b, k) => a + (b - a) * k;
 const AJ_X = 34, AI_X = 110, FLOOR_Y = 55;
-const tl = { aj: [], ai: [], ball: [], net: [], score: [], swish: [], spark: [], shadow: [], cheer: [] };
+const tl = { aj: [], ai: [], ball: [], net: [], score: [], swish: [], spark: [], shadow: [], cheer: [], clock: [] };
 for (let t = 0; t < TICKS; t++) {
   // AJ
   let aj = t < 18 ? ((t % 6) >= 4 || t % 6 === 0 ? 'high' : 'low') : t < 24 ? 'pass' : t >= 52 ? 'cheer' : 'low';
@@ -294,6 +294,8 @@ for (let t = 0; t < TICKS; t++) {
   tl.shadow.push(b && t < 62 ? (() => { const hgt = FLOOR_Y - b[1]; const w = hgt < 6 ? 8 : hgt < 18 ? 6 : 4; return { f: 'sh' + w, x: Math.round(b[0] - w / 2), y: FLOOR_Y - 1 }; })() : null);
   tl.net.push({ f: t === 52 || t === 53 ? 'net_down' : t === 54 ? 'net_up' : 'net_rest', x: 163, y: 19 });
   tl.score.push({ f: t >= 52 ? 's30' : 's28', x: 33, y: 7 });
+  // game clock counts down 0:03 → 0:00; it hits zero as the ball leaves AI's hand (buzzer beater)
+  tl.clock.push({ f: t < 15 ? 'c3' : t < 27 ? 'c2' : t < 39 ? 'c1' : (t < 52 && t % 4 >= 2) ? 'c0dim' : 'c0', x: 18, y: 15 });
   tl.swish.push(t >= 52 && t < 62 && !(t === 57 || t === 58) ? { f: 'swish', x: 120, y: 4 } : null);
   tl.spark.push(t >= 52 && t < 56 ? { f: 'spark', x: [158, 176, 160, 174][t - 52], y: [14, 15, 26, 25][t - 52] } : null);
   tl.cheer.push(t >= 52 && t < 63 ? { f: 'cheer', x: 0, y: 0 } : null);
@@ -306,6 +308,7 @@ for (const [name, pose] of Object.entries(POSES.ai)) { const { L, ox, oy } = fig
 for (let i = 0; i < 4; i++) sprites['ball' + i] = { L: ballFrame(i * Math.PI / 4), ox: 0, oy: 0 };
 for (const [k, rows] of Object.entries(NETS)) sprites['net_' + k] = { L: netFrame(rows), ox: 0, oy: 0 };
 for (const w of [4, 6, 8]) sprites['sh' + w] = { L: shadowFrame(w), ox: 0, oy: 0 };
+for (const [k, str, c] of [['c3', '0:03', '#8c95ab'], ['c2', '0:02', '#8c95ab'], ['c1', '0:01', C.yellow], ['c0', '0:00', C.led], ['c0dim', '0:00', C.ledD]]) { const L = layer(16, 5); text(L, 0, 0, str, c); sprites[k] = { L, ox: 0, oy: 0 }; }
 sprites.s28 = { L: digits('28'), ox: 0, oy: 0 }; sprites.s30 = { L: digits('30'), ox: 0, oy: 0 };
 sprites.swish = { L: swish(), ox: 0, oy: 0 }; sprites.spark = { L: sparkle(), ox: 0, oy: 0 }; sprites.cheer = { L: crowdCheer(), ox: 0, oy: 0 };
 
@@ -352,7 +355,7 @@ function track(entries) {
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W * SCALE}" height="${H * SCALE}" shape-rendering="crispEdges" role="img" aria-label="Pixel-art loop: AJ dribbles and passes, the AI teammate number 23 shoots, swish, the score goes from 28 to 30">
 <title>AJ + AI: pass, shoot, swish</title>
 <g>${rle(background())}</g>
-${track(tl.cheer)}${track(tl.score)}${track(tl.shadow)}${track(tl.aj)}${track(tl.ai)}${track(tl.ball)}${track(tl.net)}${track(tl.spark)}${track(tl.swish)}
+${track(tl.cheer)}${track(tl.score)}${track(tl.clock)}${track(tl.shadow)}${track(tl.aj)}${track(tl.ai)}${track(tl.ball)}${track(tl.net)}${track(tl.spark)}${track(tl.swish)}
 </svg>`;
 writeFileSync(new URL('../assets/hoops.svg', import.meta.url), svg);
 console.log('wrote assets/hoops.svg', (svg.length / 1024).toFixed(1), 'KB');
